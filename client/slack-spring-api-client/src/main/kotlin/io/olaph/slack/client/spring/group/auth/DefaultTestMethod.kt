@@ -1,5 +1,6 @@
 package io.olaph.slack.client.spring.group.auth
 
+import io.olaph.slack.client.ErrorResponseException
 import io.olaph.slack.client.group.ApiCallResult
 import io.olaph.slack.client.group.auth.AuthTestMethod
 import io.olaph.slack.client.spring.group.SlackRequestBuilder
@@ -24,6 +25,9 @@ class DefaultTestMethod(private val authToken: String) : AuthTestMethod() {
             }
             is ErrorAuthTestResponse -> {
                 val responseEntity = response.body as ErrorAuthTestResponse
+                if (!response.statusCode.is2xxSuccessful) {
+                    throw ErrorResponseException(this::class, response.statusCode.name, responseEntity.error)
+                }
                 this.onFailure?.invoke(responseEntity)
                 ApiCallResult(failure = responseEntity)
             }

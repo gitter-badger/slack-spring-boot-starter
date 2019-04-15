@@ -1,6 +1,6 @@
 package io.olaph.slack.client.spring.group.conversations
 
-import io.olaph.slack.client.UnknownResponseException
+import io.olaph.slack.client.ErrorResponseException
 import io.olaph.slack.client.spring.group.SlackRequestBuilder
 import io.olaph.slack.client.group.ApiCallResult
 import io.olaph.slack.client.group.conversations.ConversationsListMethod
@@ -26,6 +26,9 @@ class DefaultConversationsListMethod(private val authToken: String) : Conversati
             }
             is ErrorConversationListResponse -> {
                 val responseEntity = response.body as ErrorConversationListResponse
+                if (!response.statusCode.is2xxSuccessful) {
+                    throw ErrorResponseException(this::class, response.statusCode.name, responseEntity.error)
+                }
                 this.onFailure?.invoke(responseEntity)
                 ApiCallResult(failure = responseEntity)
             }

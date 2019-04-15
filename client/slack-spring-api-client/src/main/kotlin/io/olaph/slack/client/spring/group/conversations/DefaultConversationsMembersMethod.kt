@@ -1,5 +1,6 @@
 package io.olaph.slack.client.spring.group.conversations
 
+import io.olaph.slack.client.ErrorResponseException
 import io.olaph.slack.client.group.ApiCallResult
 import io.olaph.slack.client.group.conversations.ConversationsMembersMethod
 import io.olaph.slack.client.spring.group.SlackRequestBuilder
@@ -27,6 +28,9 @@ class DefaultConversationsMembersMethod(private val authToken: String) : Convers
             }
             is ErrorConversationMembersResponse -> {
                 val responseEntity = response.body as ErrorConversationMembersResponse
+                if (!response.statusCode.is2xxSuccessful) {
+                    throw ErrorResponseException(this::class, response.statusCode.name, responseEntity.error)
+                }
                 this.onFailure?.invoke(responseEntity)
                 ApiCallResult(failure = responseEntity)
             }

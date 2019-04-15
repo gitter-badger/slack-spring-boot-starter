@@ -1,5 +1,6 @@
 package io.olaph.slack.client.spring.group.im
 
+import io.olaph.slack.client.ErrorResponseException
 import io.olaph.slack.client.group.ApiCallResult
 import io.olaph.slack.client.group.im.ImCloseMethod
 import io.olaph.slack.client.spring.group.SlackRequestBuilder
@@ -29,6 +30,9 @@ class DefaultImCloseMethod(private val authToken: String) : ImCloseMethod() {
 
             is ErrorImCloseResponse -> {
                 val responseEntity = response.body as ErrorImCloseResponse
+                if (!response.statusCode.is2xxSuccessful) {
+                    throw ErrorResponseException(this::class, response.statusCode.name, responseEntity.error)
+                }
                 this.onFailure?.invoke(responseEntity)
                 ApiCallResult(failure = responseEntity)
             }

@@ -1,5 +1,6 @@
 package io.olaph.slack.client.spring.group.chat
 
+import io.olaph.slack.client.ErrorResponseException
 import io.olaph.slack.client.group.ApiCallResult
 import io.olaph.slack.client.group.chat.ChatPostMessageMethod
 import io.olaph.slack.client.spring.group.SlackRequestBuilder
@@ -25,6 +26,9 @@ class DefaultPostMessageMethod(private val authToken: String) : ChatPostMessageM
             }
             is ErrorPostMessageResponse -> {
                 val responseEntity = response.body as ErrorPostMessageResponse
+                if (!response.statusCode.is2xxSuccessful) {
+                    throw ErrorResponseException(this::class, response.statusCode.name, responseEntity.error)
+                }
                 this.onFailure?.invoke(responseEntity)
                 ApiCallResult(failure = responseEntity)
             }
