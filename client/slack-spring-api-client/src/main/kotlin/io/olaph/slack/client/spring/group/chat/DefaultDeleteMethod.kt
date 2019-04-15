@@ -1,9 +1,8 @@
 package io.olaph.slack.client.spring.group.chat
 
-import io.olaph.slack.client.UnknownResponseException
-import io.olaph.slack.client.spring.group.SlackRequestBuilder
 import io.olaph.slack.client.group.ApiCallResult
 import io.olaph.slack.client.group.chat.ChatDeleteMethod
+import io.olaph.slack.client.spring.group.SlackRequestBuilder
 import io.olaph.slack.dto.jackson.group.chat.ErrorChatDeleteResponse
 import io.olaph.slack.dto.jackson.group.chat.SlackDeleteResponse
 import io.olaph.slack.dto.jackson.group.chat.SuccessfulChatDeleteResponse
@@ -18,22 +17,17 @@ class DefaultDeleteMethod(private val authToken: String) : ChatDeleteMethod() {
                 .returnAsType(SlackDeleteResponse::class.java)
                 .postWithJsonBody()
 
-        return when {
-            response.body is SuccessfulChatDeleteResponse -> {
+        return when (response.body!!) {
+            is SuccessfulChatDeleteResponse -> {
                 val responseEntity = response.body as SuccessfulChatDeleteResponse
                 this.onSuccess?.invoke(responseEntity)
                 ApiCallResult(success = responseEntity)
             }
-            response.body is ErrorChatDeleteResponse -> {
+            is ErrorChatDeleteResponse -> {
                 val responseEntity = response.body as ErrorChatDeleteResponse
                 this.onFailure?.invoke(responseEntity)
                 ApiCallResult(failure = responseEntity)
             }
-            else -> {
-                throw UnknownResponseException(this::class, response)
-            }
         }
     }
-
-
 }

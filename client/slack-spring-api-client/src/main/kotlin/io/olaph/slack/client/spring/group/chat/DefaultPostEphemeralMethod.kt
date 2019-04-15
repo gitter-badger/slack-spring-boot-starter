@@ -1,9 +1,8 @@
 package io.olaph.slack.client.spring.group.chat
 
-import io.olaph.slack.client.UnknownResponseException
-import io.olaph.slack.client.spring.group.SlackRequestBuilder
 import io.olaph.slack.client.group.ApiCallResult
 import io.olaph.slack.client.group.chat.ChatPostEphemeralMethod
+import io.olaph.slack.client.spring.group.SlackRequestBuilder
 import io.olaph.slack.dto.jackson.group.chat.ErrorPostEphemeralResponse
 import io.olaph.slack.dto.jackson.group.chat.SlackPostEphemeralResponse
 import io.olaph.slack.dto.jackson.group.chat.SuccessfulPostEphemeralResponse
@@ -23,19 +22,16 @@ class DefaultPostEphemeralMethod(private val authToken: String) : ChatPostEpheme
                 .returnAsType(SlackPostEphemeralResponse::class.java)
                 .postWithJsonBody()
 
-        return when {
-            response.body is SuccessfulPostEphemeralResponse -> {
+        return when (response.body!!) {
+            is SuccessfulPostEphemeralResponse -> {
                 val responseEntity = response.body as SuccessfulPostEphemeralResponse
                 this.onSuccess?.invoke(responseEntity)
                 ApiCallResult(success = responseEntity)
             }
-            response.body is ErrorPostEphemeralResponse -> {
+            is ErrorPostEphemeralResponse -> {
                 val responseEntity = response.body as ErrorPostEphemeralResponse
                 this.onFailure?.invoke(responseEntity)
                 ApiCallResult(failure = responseEntity)
-            }
-            else -> {
-                throw UnknownResponseException(this::class, response)
             }
         }
     }

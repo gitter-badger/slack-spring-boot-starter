@@ -1,6 +1,5 @@
 package io.olaph.slack.client.spring.group.channels
 
-import io.olaph.slack.client.UnknownResponseException
 import io.olaph.slack.client.group.ApiCallResult
 import io.olaph.slack.client.group.channels.ChannelsCreateMethod
 import io.olaph.slack.client.spring.group.SlackRequestBuilder
@@ -19,19 +18,16 @@ class DefaultChannelCreateMethod(private val authToken: String) : ChannelsCreate
                 .returnAsType(SlackChannelCreateResponse::class.java)
                 .postWithJsonBody()
 
-        return when {
-            response.body is SuccessfulChannelCreateResponse -> {
+        return when (response.body!!) {
+            is SuccessfulChannelCreateResponse -> {
                 val responseEntity = response.body as SuccessfulChannelCreateResponse
                 this.onSuccess?.invoke(responseEntity)
                 ApiCallResult(success = responseEntity)
             }
-            response.body is ErrorChannelCreateResponse -> {
+            is ErrorChannelCreateResponse -> {
                 val responseEntity = response.body as ErrorChannelCreateResponse
                 this.onFailure?.invoke(responseEntity)
                 ApiCallResult(failure = responseEntity)
-            }
-            else -> {
-                throw UnknownResponseException(this::class, response)
             }
         }
     }
